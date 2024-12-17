@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bean Scene => basket</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/reset.min.css">
+    <link rel="stylesheet" href="css/styles.min.css">
+    <link rel="stylesheet" href="css/basket.css">
+    <link rel="icon" href="img/ico/ico.svg" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Clicker+Script&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+</head>
+<body class="body">
+    <header class="header">
+        <div class="container">
+            <div class="header__wrapper d-flex">
+                <div class="header__wrapper-img">
+                    <a href="../" class="header__link-logo">
+                        <img src="../img/svg/logo.svg" alt="logo" class="header__img">
+                    </a>
+                </div>
+                <div class="header__wrapper-nav">
+                    <nav class="header__nav">
+                        <ul class="header__menu">
+                            <li class="header__item">
+                                <a href="#" class="header__link header__link-accent">office</a>
+                            </li>
+                            <li class="header__item">
+                                <a href="../" class="header__link">Home</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="header__wrapper-elem">
+                        <a href="#" class="header__basket"><img src="../img/svg/basket.svg" alt="basket" class="header__basket"></a>
+                        <button type="button" class="header__sign-in" data-open-signIn>Sign In</button>
+                        <button type="button" class="btn header__sing-up" data-open-signUp>SingUp</button> 
+                    </div>
+                </div>
+                <span class="header__burger"></span>
+            </div>
+        </div>
+    </header>
+    <main class="main">
+        <section class="basket">
+            <div class="container">
+                <h1 class="title">Shopping cart</h1>
+                <div class="basket__null">
+                    <div class="basket__text">Your shopping cart is empty</div>
+                    <img src="img/svg/cart.svg" alt="basket" class="basket__img">
+                    <a href="index.html" class="btn btn-order">Order everything!</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="container">
+            <div class="row d-flex">
+                <div class="footer__offer col-lg-4"> <!--! ДОБАВЬ ЕЩЁ COL -->
+                    <a href="../" class="footer__wrapper-img">
+                        <img src="../img/svg/logo.svg" alt="logo" class="footer__img">
+                    </a>
+                    <div class="footer__description">
+                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                        Lorem Ipsum has been the industry's standard dummy text ever since the 
+                        1500s, when an unknown printer took a galley of type and scrambled it to 
+                        make a type specimen book.
+                    </div>
+                    <div class="footer__wrapper-icon"> 
+                        <a href="#" class="footer__link-icon"><img src="../img/svg/footer_facebook.svg" alt="facebook" class="footer__icon-link"></a>
+                        <a href="#" class="footer__link-icon"><img src="../img/svg/footer_instagram.svg" alt="instagram" class="footer__icon-link"></a>
+                        <a href="#" class="footer__link-icon"><img src="../img/svg/footer_youtube.svg" alt="youtube" class="footer__icon-link"></a>
+                        <a href="#" class="footer__link-icon"><img src="../img/svg/footer_x.svg" alt="x" class="footer__icon-link"></a>
+                    </div>
+                </div>
+                <div class="footer__about col-lg-2">
+                    <h2 class="title">About</h2>
+                    <nav class="footer__nav">
+                        <ul class="footer__menu">
+                            <li class="footer__item"><a href="#" class="footer__link">Menu</a></li>
+                            <li class="footer__item"><a href="#" class="footer__link">Features</a></li>
+                            <li class="footer__item"><a href="#" class="footer__link">News & Blogs</a></li>
+                            <li class="footer__item"><a href="#" class="footer__link">Help & Supports</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="footer__company col-lg-2">
+                    <h2 class="title">Company</h2>
+                    <div class="footer__wrapper-inn">
+                        <a href="#" class="footer__link">How we work</a>
+                        <a href="#" class="footer__link">Terms of service</a>
+                        <a href="#" class="footer__link">Pricing</a>
+                        <a href="#" class="footer__link">FAQ</a>
+                    </div>
+                </div>
+                <div class="footer__contact col-lg-4"> <!--! ДОБАВЬ ЕЩЁ COL -->
+                    <h2 class="title">Contact Us</h2>
+                    <div class="footer__wrapper-inn">
+                        <a href="#" class="footer__link">Akshya Nagar 1st Block 1st Cross, Rammurthy nagar, Bangalore-560016</a>
+                        <a href="tel:+12029182132" class="footer__link">+1 202-918-2132</a>
+                        <a href="#" class="footer__link">beanscene@mail.com</a>
+                        <a href="#" class="footer__link">www.beanscene.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!--+ MODALS: -->
+    <div class="modal" data-modal-signUp>
+        <form action="#" method="post" class="modal__wrapper">
+            <div class="modal__text">
+                Welcome! Your coffee adventure starts here.
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="neme" class="modal__label">Name</label>
+                <input type="text" name="neme" id="name" class="modal__input" tabindex="1" required>
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="email" class="modal__label">Email</label>
+                <input type="text" name="email" id="email" class="modal__input" tabindex="2" required>
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="address" class="modal__label">Address</label>
+                <input list="cities" type="text" name="address" id="address" class="modal__input" tabindex="2" required>
+                <datalist id="cities">
+                    <option>Moscow
+                    <option>Saint-Petersburg
+                    <option>Chelyabinsk
+                    <option>Orenburg
+                    <option>Yaroslavl
+                    <option>Samara
+                </datalist>
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="password" class="modal__label">Password</label>
+                <input type="text" name="password" id="password" class="modal__input" tabindex="3" required>
+            </div>
+            <button type="submit" class="btn modal__btn" tabindex="4" data-btn-signUp>To Send</button>
+            <div class="modal__link" data-linkRegistration>already have an account?</div>
+        </form>
+    </div>
+    <div class="modal" data-modal-signIn>
+        <form action="#" method="post" class="modal__wrapper">
+            <div class="modal__text">
+                Welcome back! The best coffee moments are waiting for you.
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="email-authorization" class="modal__label">Email</label>
+                <input type="text" name="email-signIn" id="email-authorization" class="modal__input" tabindex="2" required>
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="password-authorization" class="modal__label">Password</label>
+                <input type="text" name="password-signIn" id="password-authorization" class="modal__input" tabindex="1" required>
+            </div>
+            <button type="submit" class="btn modal__btn" tabindex="2" data-btn-signIn>To send</button>
+            <div class="modal__wrapper-link">
+                <div class="modal__link" data-linkAuthorization>new account</div>
+                <div class="modal__link">forgot password?</div>
+            </div>
+        </form>
+    </div>
+    <div class="modal modal-message" data-modal-message>
+        <form action="#" method="post" class="modal__wrapper">
+
+        </form>
+    </div>
+    <script defer src="js/basket.js"></script>
+</body>
+</html>
