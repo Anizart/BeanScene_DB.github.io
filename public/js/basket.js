@@ -122,3 +122,31 @@ function showSards() {
 </div>
 <button class="btn btn-order">Order everything!</button>
 </div> */}
+
+//+ Ссылка office:
+document.querySelector('#office').addEventListener('click', (e) => {
+    e.preventDefault();
+    checkAuth();
+});
+
+//+ для ссылки office:
+async function checkAuth() {
+    try {
+        const response = await fetch('/check-auth', {
+            method: 'GET',
+            credentials: 'same-origin' // Cookie будут передаваться с запросом
+        });
+
+        const data = await response.json();
+
+        if (data.isAuthenticated) {
+            window.location.href = `http://localhost:3000/office.html`;
+        } else {
+            showModal(modalAreaSignIn);
+        }
+
+    } catch (error) {
+        console.error('Ошибка при проверке авторизации:', error);
+        showModal(modalAreaSignIn);
+    }
+}

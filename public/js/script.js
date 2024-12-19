@@ -186,32 +186,42 @@ document.querySelector('[data-btn-signUp]').addEventListener('click', async (e) 
         console.log("Ответ от сервера:", user);
 
         if (response.ok) {
-            alert("Пользователь успешно зарегистрирован!");
+            showMessage(`${user.message} (～￣▽￣)～`);
         } else {
-            alert("Ошибка: " + user.message);
+            showMessage(user.message);
         }
+
+        document.querySelector('.modal__wrapper').reset();
     } catch (error) {
         console.error("Ошибка при отправке данных:", error);
-        alert("Ошибка при регистрации пользователя");
+        showMessage("Oops... Error during user registration <(＿ ＿)>");
     }
+
+    name = '';
+    email = '';
+    address = '';
+    password = '';
 });
 
 //+ Authorization:
 document.querySelector('[data-btn-signIn]').addEventListener('click', async (e) => {
     e.preventDefault();
 
-    const email = document.querySelector('#email-authorization').value,
-          password = document.querySelector('#password-authorization').value;
+    const emailInput = document.querySelector('#email-authorization'),
+          passwordInput = document.querySelector('#password-authorization');
+
+    const email = emailInput.value,
+          password = passwordInput.value;
 
     if (!email || !password) {
-        alert("Email и пароль обязательны для ввода!");
+        showMessage('Email and password are required to enter!');
         return;
-    }    
+    }
 
     try {
-        const response = await fetch('/login', {  // Меняем URL на /login для авторизации
+        const response = await fetch('/login', {
             method: "POST",
-            body: JSON.stringify({ email, password }),  // Отправляем email и пароль
+            body: JSON.stringify({ email, password }),
             headers: {
                 "Content-Type": "application/json"
             }
@@ -221,13 +231,58 @@ document.querySelector('[data-btn-signIn]').addEventListener('click', async (e) 
         console.log("Ответ от сервера:", data);
 
         if (response.ok) {
-            alert("Вы успешно авторизовались!");
-            // Можно здесь выполнить редирект на другую страницу или обновить UI
+            showMessage(data.message);
+            // Можно обновить UI
         } else {
-            alert("Ошибка: " + data.message);
+            showMessage(data.message);
         }
     } catch (error) {
         console.error("Ошибка при отправке данных:", error);
-        alert("Ошибка при авторизации");
+        showMessage(`Oops... ${data.message} <(＿ ＿)>`);
     }
+
+    emailInput.value = '';
+    passwordInput.value = '';
 });
+
+//+ Ссылка office:
+document.querySelector('#office').addEventListener('click', (e) => {
+    e.preventDefault();
+    checkAuth();
+});
+
+//+ Функции работающие с сервером:
+//+ Модалка с сообщениями:
+function showMessage(notification) {
+    const modal = document.querySelector('.modal-message'),
+          message = modal.querySelector('.modal__text');
+
+    modal.classList.add('modal-message-active');
+    message.innerHTML = notification;
+
+    setTimeout(() => {
+        modal.classList.remove('modal-message-active');
+    }, 2500);
+}
+
+//+ для ссылки office:
+async function checkAuth() {
+    try {
+        const response = await fetch('/check-auth', {
+            method: 'GET',
+            credentials: 'same-origin' // Cookie будут передаваться с запросом
+        });
+
+        const data = await response.json();
+
+        if (data.isAuthenticated) {
+            window.location.href = `http://localhost:3000/office.html`;
+        } else {
+            showModal(modalAreaSignIn);
+        }
+
+    } catch (error) {
+        console.error('Ошибка при проверке авторизации:', error);
+        showModal(modalAreaSignIn);
+    }
+}
