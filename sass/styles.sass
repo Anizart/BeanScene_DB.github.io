@@ -183,6 +183,14 @@ img
     display: flex
     animation: fadeIn .5s forwards
     backdrop-filter: blur(4px)
+.modal-message-active
+    display: flex
+    animation: fadeIn .5s forwards
+    align-items: start
+    margin-top: 45px
+.modal__wrapper-border
+    background-color: #341f17
+    border: 1.5px solid $light-color
 @keyframes fadeIn
     0%
         opacity: 0
@@ -681,6 +689,25 @@ img
     .chance
         &__wrapper-img-grains
             display: none
+
+//+ demonstration:
+.demonstration
+    display: flex
+    align-items: center
+    &__wrapper
+        min-height: clamp(100px, 11vw, 280px)
+        display: flex
+        justify-content: space-between
+        align-items: center
+    &__window
+        width: 45%
+        display: flex
+        align-items: center
+        justify-content: center
+        border: 2px solid $dark-theme-title
+        padding: 15px
+    &__quantity
+        font-size: clamp(16px, 3vw, 40px)
 
 //+ response:
 .response
