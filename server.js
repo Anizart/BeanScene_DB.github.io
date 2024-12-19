@@ -4,6 +4,7 @@ const express = require('express'),
       cors = require('cors'),
       path = require('path'),
       bcrypt = require('bcryptjs'), // для хэширования
+      cookieParser = require('cookie-parser');
 
      app = express(),
      port = 3000;
@@ -99,6 +100,10 @@ const Basket = sequelize.define('basket', {
 
 sequelize.sync(); //+ Синхранизация бд...
 
+//+ Подключаю middleware для обработки JSON и cookie:
+app.use(express.json());
+app.use(cookieParser());
+
 //+ Registration:
 app.post('/regist', async (req, res) => {
     try {
@@ -130,8 +135,14 @@ app.post('/regist', async (req, res) => {
 
         console.log("User created:", newUser.toJSON());
 
+        //+ Сохранение userId в cookie на 18 дней:
+        res.cookie('userId', newUser.id, {
+            httpOnly: true, // Кука доступна только для сервера
+            maxAge: 18 * 24 * 60 * 60 * 1000 // 18 дней в миллисекундах
+        });
+
         //+ Ответ клиенту:
-        res.status(201).json({ message: "User successfully registered", user: newUser });
+        res.status(201).json({ message: "The user has been successfully registered", user: newUser });
     } catch (error) {
         console.error("Error during user creation:", error);
         res.status(500).json({ message: "Internal server error" });
@@ -144,31 +155,76 @@ app.post('/login', async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: "Email и пароль обязательны" });
+            return res.status(400).json({ message: "Email and password are required" });
         }
 
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            return res.status(400).json({ message: "Пользователь не найден" });
+            return res.status(400).json({ message: "The user was not found ㄟ( ▔, ▔ )ㄏ" });
         }
 
-        // Проверка пароля
+        //+ Проверка пароля:
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) {
-            return res.status(400).json({ message: "Неверный пароль" });
+            return res.status(400).json({ message: "Invalid password" });
         }
 
-        // Устанавливаем cookie с userId
-        res.cookie('userId', user.id, { httpOnly: true, maxAge: 3600000 });  // cookie на 1 час
+        //+ Устанавливаем cookie с userId на 18 дней;
+        res.cookie('userId', user.id, {
+            httpOnly: true, // Кука доступна только для сервера
+            maxAge: 18 * 24 * 60 * 60 * 1000 // 18 дней в миллисекундах
+        });
 
-        res.status(200).json({ message: "Авторизация успешна" });
+        res.status(200).json({ message: "Authorization is successful（￣︶￣）↗" });
     } catch (error) {
         console.error("Ошибка при авторизации:", error);
-        res.status(500).json({ message: "Внутренняя ошибка сервера" });
+        res.status(500).json({ message: "Internal server error (＃°Д°)" });
     }
 });
 
+//+ Ссылка офиса (прверка):
+//+ Маршрут для проверки авторизации:
+app.get('/check-auth', (req, res) => {
+    const userId = req.cookies.userId;
+
+    if (userId) {
+        return res.json({isAuthenticated: true});
+    } else {
+        return res.json({isAuthenticated: false});
+    }
+});
+
+//+ Эндпоинт для получения данных пользователя:
+app.get('/user-profile', async (req, res) => {
+    try {
+        const userId = req.cookies.userId;
+
+        //+ Проверка наличия userId:
+        if (!userId) {
+            return res.status(401).json({message: 'Not authorized'});
+        }
+
+        //+ Получение пользователя из БД:
+        const user = await User.findByPk(userId);
+
+        //+ Проверка существования пользователя:
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        //+ Возврат данных пользователя:
+        res.status(200).json({
+            name: user.name,
+            email: user.email,
+            address: user.address
+        });
+
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 //+ Функции:
 //+ Добавление пользователя:
