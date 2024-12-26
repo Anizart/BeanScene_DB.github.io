@@ -196,6 +196,28 @@ img
         opacity: 0
     100%
         opacity: 1
+//+ Modal-search:
+.modal-search
+    &__card
+        display: flex
+        flex-direction: column
+        justify-content: center
+        text-align: center
+    &__card + .modal-search__card::before
+        content: ''
+        height: 1.5px
+        width: 100%
+        background-color: #fff
+        margin: 20px 0 20px
+
+    &__wrapper-img
+        max-width: 180px
+        border: 1.5px solid #fff
+        margin-bottom: 15px
+    &__price
+        margin-top: 8px
+    &__btn
+        margin: 15px auto 0 auto
 
 //+ header:
 .bg-blure
@@ -213,7 +235,7 @@ img
         align-items: center
     &__wrapper-nav
         width: 100%
-        max-width: 841px
+        max-width: 880px
         display: inherit
         justify-content: space-between
         align-items: center
@@ -224,6 +246,8 @@ img
     &__link-logo
         height: 100%
         width: 100%
+    &__btn-search
+        background: transparent
     &__menu
         display: flex
         column-gap: clamp(30px, 5vw, 60px)
@@ -298,7 +322,7 @@ img
             background-color: $light-color
             position: absolute
             bottom: 10px
-@media (max-width: 808px)
+@media (max-width: 899px)
     .header
         &__burger
             display: block
@@ -522,6 +546,9 @@ img
         left: 50%
         transform: translateX(-50%)
         bottom: -24px
+    &__btn-full
+        margin: 0 auto
+        margin-top: 35px
 @media (max-width: 769px)
     .menu
         &__card
