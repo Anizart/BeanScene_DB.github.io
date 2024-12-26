@@ -1,17 +1,18 @@
-const express = require('express'),
-      {Sequelize, DataTypes} = require('sequelize'),
-      bodyParser = require('body-parser'),
-      cors = require('cors'),
-      path = require('path'),
-      bcrypt = require('bcryptjs'), // для хэширования
-      cookieParser = require('cookie-parser');
+import express from 'express';
+import { Sequelize, DataTypes } from 'sequelize';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import path from 'path';
+import bcrypt from 'bcryptjs'; // для хэширования
+import cookieParser from 'cookie-parser';
 
-     app = express(),
-     port = 3000;
+const app = express(),
+      port = 3000;
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: 'public/dataBase.sqlite' // сохраняю в папку public для последующего просмотра
+    storage: 'public/dataBase.sqlite', // сохраняю в папку public для последующего просмотра
+    logging: console.log  // Логирование SQL-запросов
 });
 
 //+ Middleware для разрешения запросов с клиента:
@@ -52,6 +53,10 @@ const User = sequelize.define('registration', {
 
 // + Модель таблицы продуктов:
 const Product = sequelize.define('product', {
+    img: {
+        type: DataTypes.STRING,  // URL изображения
+        allowNull: true
+    },
     name: {
         type: DataTypes.STRING,
         allowNull: false
@@ -68,7 +73,7 @@ const Product = sequelize.define('product', {
 
 // + Модель таблицы заказов:
 const Order = sequelize.define('order', {
-    id_user: {
+    id_user: { //+ это заменишь
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -98,7 +103,35 @@ const Basket = sequelize.define('basket', {
     },
 });
 
-sequelize.sync(); //+ Синхранизация бд...
+// await sequelize.sync({ force: true }); //+ Для полного пересоздания таблиц
+await sequelize.sync(); //+ Синхранизация бд...
+
+//+ Необходимые загрузки для корректной работы приожения:
+//+ Продукты:
+// await Product.create({
+//     img: "img/section_3_card_1.webp",
+//     name: "Cappuccino",
+//     description: "Coffee 50% | Milk 50%",
+//     price: "18.50"
+// });
+// await Product.create({
+//     img: "img/section_3_card_2.webp",
+//     name: "Chai Latte",
+//     description: "Coffee 50% | Milk 50%",
+//     price: "28.50"
+// });
+// await Product.create({
+//     img: "img/section_3_card_3.webp",
+//     name: "Macchiato",
+//     description: "Coffee 50% | Milk 50%",
+//     price: "38.50"
+// });
+// await Product.create({
+//     img: "img/section_3_card_4.webp",
+//     name: "Expresso",
+//     description: "Coffee 50% | Milk 50%",
+//     price: "48.50"
+// });
 
 //+ Подключаю middleware для обработки JSON и cookie:
 app.use(express.json());
@@ -272,11 +305,51 @@ app.post('/logout', (req, res) => {
     res.status(200).json({ message: 'Logout successful' });
 });
 
-//+ Функции:
-//+ Добавление пользователя:
-// function () {
+//+ Эндпоинт для получения всех продуктов:
+app.get('/products', async (req, res) => {
+    try {
+        // Получаю все продукты из базы данных:
+        const products = await Product.findAll();
 
-// }
+        // Возвращаю данные продуктов в формате JSON:
+        res.status(200).json(products);
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+//+ Эндпоинт для поиска продуктов:
+app.get('/search-products', async (req, res) => {
+    try {
+        const query = req.query.query; // Получаю строку поиска из параметра query
+
+        if (!query) {
+            return res.status(400).json({ message: 'Search query is required' });
+        }
+
+        // Поиск продуктов по имени, используя оператор like для частичного совпадения
+        const products = await Product.findAll({
+            where: {
+                name: {
+                    [Sequelize.Op.like]: `%${query}%` // Поиск по имени с подстрочными совпадениями
+                }
+            }
+        });
+
+        if (products.length > 0) {
+            return res.json(products);
+        } else {
+            return res.status(404).json({ message: 'No products found' });
+        }
+    } catch (error) {
+        console.error('Error while searching for products:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+//+ Функции:
+
 
 app.listen(port, () => {
     console.log(`the server is running, the port is: ${port}`);
