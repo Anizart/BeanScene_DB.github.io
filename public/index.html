@@ -45,8 +45,9 @@
                                 <div class="header__circle"></div>
                             </div>
                             <a href="basket.html" class="header__basket"><img src="img/svg/basket.svg" alt="basket" class="header__basket"></a>
+                            <button type="button" class="header__btn-search"><img src="img/svg/header_search.svg" alt="search" class="header__search"></button>
                             <button type="button" class="header__sign-in" data-open-signIn>Sign In</button>
-                            <button type="button" class="btn header__sing-up" data-open-signUp>SingUp</button> 
+                            <button type="button" class="btn header__sing-up" data-open-signUp>SignUp</button> 
                         </div>
                     </div>
                     <span class="header__burger"></span>
@@ -145,6 +146,7 @@
                             <a href="#" class="btn menu__btn">Order now</a>
                         </div>
                     </div>
+                    <a href="#" class="btn menu__btn-full">full menu</a>
                 </div>
             </section>
             <section class="section priorities">
@@ -421,20 +423,13 @@
                 </div>
             </form>
         </div>
-        <div class="modal" data-modal-order>
+        <div class="modal modal-search" data-modal-search>
             <form action="#" method="post" class="modal__wrapper">
                 <div class="modal__text">
-                    Order
+                    What do you want today?
                 </div>
-                <div class="modal__product"></div>
-                <button type="submit" class="btn modal__btn" tabindex="2">Into a basket</button>
-            </form>
-        </div>
-        <div class="modal modal-messageeeee" data-modal-order>
-            <form action="#" method="post" class="modal__wrapper">
-                <div class="modal__text">
-                    You are on the way to cheerfulness ツ
-                </div>
+                <input type="text" name="email-signIn" id="search" class="modal__input" placeholder="Product name..." tabindex="2" required>
+                <div class="modal-search__wrapper-products"></div>
             </form>
         </div>
         <div class="modal modal-message" data-modal-order>

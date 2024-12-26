@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <link rel="stylesheet" href="css/reset.min.css">
     <link rel="stylesheet" href="css/styles.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/office.css">
     <link rel="icon" href="../img/ico/ico.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
                     <div class="header__wrapper-elem">
                         <a href="basket.html" class="header__basket"><img src="../img/svg/basket.svg" alt="basket" class="header__basket"></a>
                         <button type="button" class="header__sign-in" data-open-signIn>Sign In</button>
-                        <button type="button" class="btn header__sing-up" data-open-signUp>SingUp</button> 
+                        <button type="button" class="btn header__sing-up" data-open-signUp>SignUp</button> 
                     </div>
                 </div>
                 <span class="header__burger"></span>
@@ -49,7 +49,10 @@
                     <p><strong>Email:</strong> Error</p>
                     <p><strong>Address:</strong> Error</p>
                 </div>
-                <button class="btn btn-edit">Edit Profile</button>
+                <div class="office__wrapper-btn">
+                    <button type="button" class="btn btn-edit">Edit Profile</button>
+                    <button type="button" class="btn btn-exit">Exit</button>
+                </div>
             </div>
         </section>
     </main>
@@ -159,10 +162,58 @@
             </div>
         </form>
     </div>
-    <div class="modal" data-modal-edit>
+    <div class="modal modal-search" data-modal-search>
         <form action="#" method="post" class="modal__wrapper">
-
+            <div class="modal__text">
+                What do you want today?
+            </div>
+            <input type="text" name="email-signIn" id="search" class="modal__input" placeholder="Product name..." tabindex="2" required>
+            <div class="modal-search__wrapper-products"></div>
         </form>
+    </div>
+    <div class="modal" data-modal-edit>
+        <form action="#" method="post" class="modal__wrapper" data-edit-form>
+            <div class="modal__text">
+                Editing a profile:
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="neme" class="modal__label">Name</label>
+                <input type="text" name="neme" id="name" class="modal__input" tabindex="1" required>
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="address" class="modal__label">Address</label>
+                <input list="cities" type="text" name="address" id="address" class="modal__input" tabindex="2" required>
+                <datalist id="cities">
+                    <option>Moscow
+                    <option>Saint-Petersburg
+                    <option>Chelyabinsk
+                    <option>Orenburg
+                    <option>Yaroslavl
+                    <option>Samara
+                </datalist>
+            </div>
+            <div class="modal__wrapper-input">
+                <label for="password" class="modal__label">Password</label>
+                <input type="text" name="password" id="password" class="modal__input" tabindex="3" required>
+            </div>
+            <button type="submit" class="btn modal__btn" tabindex="4" data-btn-signUp>Done</button>
+        </form>
+    </div>
+    <div class="modal modal-message" data-modal-order>
+        <div class="modal__wrapper modal__wrapper-border">
+            <div class="modal__text"></div>
+        </div>
+    </div>
+    <div class="modal modal-question" data-modal-question>
+        <div class="modal__wrapper">
+            <div class="modal__text">
+                Are you sure you want to get out?
+            </div>
+            <div class="modal__wrapper-btn">
+                <button type="button" class="btn modal__btn" tabindex="1" data-btn>No</button>
+                <button type="button" class="btn modal__btn btn-exit" tabindex="2" data-btn-exit>Yes</button>
+            </div>
+        </div>
     </div>
     <script defer src="js/office.js"></script>
 </body>
