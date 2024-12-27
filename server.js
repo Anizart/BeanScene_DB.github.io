@@ -25,6 +25,11 @@ app.use(express.json());
 
 //+ Модель таблицы подписок:
 const Subscribe = sequelize.define('subscribe', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     email: {
         type: DataTypes.STRING,
         allowNull: false
@@ -33,6 +38,11 @@ const Subscribe = sequelize.define('subscribe', {
 
 //+ Модель таблицы пользователей:
 const User = sequelize.define('registration', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     name: {
         type: DataTypes.STRING,
         allowNull: false
@@ -53,6 +63,11 @@ const User = sequelize.define('registration', {
 
 // + Модель таблицы продуктов:
 const Product = sequelize.define('product', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     img: {
         type: DataTypes.STRING,  // URL изображения
         allowNull: true
@@ -73,6 +88,11 @@ const Product = sequelize.define('product', {
 
 // + Модель таблицы заказов:
 const Order = sequelize.define('order', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     id_user: { //+ это заменишь
         type: DataTypes.STRING,
         allowNull: false
@@ -93,15 +113,35 @@ const Order = sequelize.define('order', {
 
 // + Модель таблицы корзины:
 const Basket = sequelize.define('basket', {
-    id_order: {
-        type: DataTypes.STRING,
-        allowNull: false
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    id_user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'id'
+        }
     },
     id_product: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        references: {
+            model: Product,
+            key: 'id',
+        },
+        allowNull: false,
     },
 });
+
+//+ Установка связей:
+Product.hasMany(Basket, { foreignKey: 'id_product' }); // Один продукт может быть в нескольких корзинах
+Basket.belongsTo(Product, { foreignKey: 'id_product' }); // Запись в корзине связана с одним продуктом
+
+User.hasMany(Basket, { foreignKey: 'id_user' }); // Один пользователь может иметь несколько записей в корзине
+Basket.belongsTo(User, { foreignKey: 'id_user' }); // Запись в корзине принадлежит одному пользователю
 
 // await sequelize.sync({ force: true }); //+ Для полного пересоздания таблиц
 await sequelize.sync(); //+ Синхранизация бд...
@@ -348,8 +388,80 @@ app.get('/search-products', async (req, res) => {
     }
 });
 
-//+ Функции:
+//+ Эндпоинт для добавления товара в корзину:
+app.post('/add-to-basket', async (req, res) => {
+    try {
+        const userId = req.cookies.userId;
+        const { productId } = req.body;
 
+        if (!userId) {
+            console.log('Нет пользователя');
+            return res.status(401);
+        }
+
+        if (!productId) {
+            console.log('Нет продукта');
+            return res.status(400);
+        }
+
+        // Добавляю запись в таблицу корзины:
+        await Basket.create({ id_user: userId, id_product: productId });
+
+        res.status(201).json({ message: 'Product added to basket successfully' });
+    } catch (error) {
+        console.error('Error adding product to basket:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+//+ Эндпоинт для получения корзины пользователя:
+app.get('/get-basket', async (req, res) => {
+    try {
+        const userId = req.cookies.userId;
+
+        if (!userId) {
+            return res.status(401);
+        }
+
+        // Получаю записи корзины пользователя вместе с информацией о продуктах:
+        const basketItems = await Basket.findAll({
+            where: { id_user: userId },
+            include: [Product] // Подключаю связанные записи продуктов
+        });
+
+        res.status(200).json(basketItems);
+    } catch (error) {
+        console.error('Error fetching basket:', error);
+        res.status(500);
+    }
+});
+//+ Эндпоинт для удаления товара из корзины:
+app.delete('/remove-from-basket', async (req, res) => {
+    try {
+        const userId = req.cookies.userId;
+        const { productId } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+
+        if (!productId) {
+            return res.status(400).json({ message: 'Product ID is required' });
+        }
+
+        // Удаляю запись из корзины:
+        await Basket.destroy({
+            where: {
+                id_user: userId,
+                id_product: productId
+            }
+        });
+
+        res.status(200).json({ message: 'Product removed from basket successfully' });
+    } catch (error) {
+        console.error('Error removing product from basket:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 app.listen(port, () => {
     console.log(`the server is running, the port is: ${port}`);
