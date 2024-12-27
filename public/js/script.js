@@ -268,7 +268,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     fetchAndDisplayProducts();
 
     //+ Для поиска продуктов:
-    document.querySelector('#search').addEventListener('input', async function() {
+    document.querySelector('#search').addEventListener('input', async function () {
         const searchQuery = this.value.trim();
     
         if (searchQuery.length === 0) {
@@ -287,7 +287,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const productsWrapper = document.querySelector('.modal-search__wrapper-products');
                 productsWrapper.innerHTML = '';
     
-                // Создание карточки продуктов:
+                // Создание карточек продуктов:
                 products.forEach(product => {
                     const card = document.createElement('div');
                     card.classList.add('modal-search__card');
@@ -299,10 +299,37 @@ window.addEventListener('DOMContentLoaded', async () => {
                         <h3 class="modal-search__name">${product.name}</h3>
                         <div class="modal-search__weights">${product.description}</div>
                         <div class="modal-search__price">${product.price}</div>
-                        <a href="#" class="btn modal-search__btn">Order now</a>
+                        <a href="#" class="btn modal-search__btn" data-productId="${product.id}">Order now</a>
                     `;
     
                     productsWrapper.appendChild(card);
+                });
+    
+                // Добавление обработчиков для кнопок "Order now":
+                document.querySelectorAll('.modal-search__btn').forEach(button => {
+                    button.addEventListener('click', async (event) => {
+                        event.preventDefault();
+    
+                        const productId = event.target.getAttribute('data-productId');
+    
+                        try {
+                            const response = await fetch('/add-to-basket', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ productId })
+                            });
+    
+                            if (response.ok) {
+                                showMessage('Product added to the basket!');
+                            } else {
+                                showMessage('Failed to add product to the basket');
+                            }
+                        } catch (error) {
+                            console.error('Error adding product to the basket:', error);
+                        }
+                    });
                 });
             } else {
                 // Если нет продуктов:
@@ -310,6 +337,31 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (error) {
             console.error('Error fetching products:', error);
+        }
+    });
+
+    //+ Добавление продукта в корзину:    
+    document.querySelector('.menu__owl-carousel').addEventListener('click', async (event) => {
+        if (event.target.classList.contains('menu__btn-product')) {
+            event.preventDefault();
+    
+            const productId = event.target.getAttribute('data-productId');
+    
+            try {
+                const response = await fetch('/add-to-basket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
+                });
+    
+                if (response.ok) {
+                    showMessage('Product added to the basket!');
+                } else {
+                    showMessage('Failed to add product to the basket');
+                }
+            } catch (error) {
+                console.error('Error adding product to the basket:', error);
+            }
         }
     });
 
@@ -381,7 +433,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                         <h3 class="menu__name">${product.name}</h3>
                         <div class="menu__weights">${product.description}</div>
                         <div class="menu__price">${product.price}</div>
-                        <a href="#" class="btn menu__btn">Order now</a>
+                        <a href="#" class="btn menu__btn menu__btn-product" data-productId="${product.id}">Order now</a>
                     </div>
                 `;
                 carousel.append(card);
