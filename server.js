@@ -93,22 +93,30 @@ const Order = sequelize.define('order', {
         primaryKey: true,
         autoIncrement: true
     },
-    id_user: { //+ это заменишь
-        type: DataTypes.STRING,
-        allowNull: false
+    id_user: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'id',
+        },
+        allowNull: false,
     },
     time: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false
     },
     id_product: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        references: {
+            model: Product,
+            key: 'id',
+        },
+        allowNull: false,
     },
     address: {
         type: DataTypes.STRING,
-        allowNull: false
-    }
+        allowNull: false,
+    },
 });
 
 // + Модель таблицы корзины:
@@ -142,6 +150,12 @@ Basket.belongsTo(Product, { foreignKey: 'id_product' }); // Запись в ко
 
 User.hasMany(Basket, { foreignKey: 'id_user' }); // Один пользователь может иметь несколько записей в корзине
 Basket.belongsTo(User, { foreignKey: 'id_user' }); // Запись в корзине принадлежит одному пользователю
+
+User.hasMany(Order, { foreignKey: 'id_user' }); // Один пользователь может делать несколько заказов
+Order.belongsTo(User, { foreignKey: 'id_user' });
+
+Product.hasMany(Order, { foreignKey: 'id_product' }); // Один продукт может быть в нескольких заказах
+Order.belongsTo(Product, { foreignKey: 'id_product' });
 
 // await sequelize.sync({ force: true }); //+ Для полного пересоздания таблиц
 await sequelize.sync(); //+ Синхранизация бд...
@@ -459,6 +473,97 @@ app.delete('/remove-from-basket', async (req, res) => {
         res.status(200).json({ message: 'Product removed from basket successfully' });
     } catch (error) {
         console.error('Error removing product from basket:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+//+ Эндпоинт для создания заказа:
+app.post('/create-order', async (req, res) => {
+    try {
+        const userId = req.cookies.userId;
+        const { productId } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+
+        if (!productId) {
+            return res.status(400).json({ message: 'Product ID is required' });
+        }
+
+        // Получение адреса пользователя:
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const order = await Order.create({
+            id_user: userId,
+            id_product: productId,
+            time: new Date(),
+            address: user.address, // Адрес пользователя
+        });
+
+        // Удаление продукта из корзины после создания заказа:
+        await Basket.destroy({
+            where: { id_user: userId, id_product: productId },
+        });
+
+        res.status(201).json({ message: 'Order created successfully'});
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+//+ Эндпоинт для подсчёта кол-ва заказов, сделанных за сегодня:
+app.get('/orders-today', async (req, res) => {
+    try {
+        const todayStart = new Date(),
+              todayEnd = new Date();
+
+        todayStart.setHours(0, 0, 0, 0); // Начало сегодняшнего дня
+        todayEnd.setHours(23, 59, 59, 999); // Конец сегодняшнего дня
+
+        // Подсчёт заказов, сделанных за сегодня:
+        const orderCount = await Order.count({
+            where: {
+                time: {
+                    [Sequelize.Op.between]: [todayStart, todayEnd] // Только заказы в пределах сегодняшнего дня
+                }
+            }
+        });
+
+        res.status(200).json({ count: orderCount });
+    } catch (error) {
+        console.error("Error fetching order count:", error);
+        res.status(500);
+    }
+});
+
+//+ Эндпоинт для добавления email в таблицу Subscribe
+app.post('/subscribe', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Проверяю, что email был передан:
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        // Проверяю, существует ли уже такой email в базе:
+        const existingEmail = await Subscribe.findOne({ where: { email } });
+        if (existingEmail) {
+            return res.status(400).json({ message: 'This email is already subscribed' });
+        }
+
+        // Добавляю email:
+        const newSubscription = await Subscribe.create({ email });
+        console.log('New subscriber:', newSubscription.toJSON());
+
+        res.status(201).json({ message: 'Successfully subscribed', subscriber: newSubscription });
+    } catch (error) {
+        console.error('Error during subscription:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
