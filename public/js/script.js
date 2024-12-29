@@ -365,6 +365,48 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    //+ Вывод количества заказов:
+    fetch('/orders-today')
+    .then(response => response.json())
+    .then(data => {
+        const quantityElement = document.querySelector('.demonstration__quantity');
+        quantityElement.textContent = data.count;
+    })
+    .catch(error => {
+        console.error('Error fetching order count:', error);
+    });
+
+    //+ Подписка:
+    const form = document.querySelector('.subscribe__form');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const email = form.querySelector('input[name="email"]').value;
+
+        try {
+            const response = await fetch('/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showMessage(result.message + ' o(*￣︶￣*)o');
+                form.querySelector('input[name="email"]').value = '';
+            } else {
+                showMessage(result.message + ' (＃°Д°)');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('Error occurred while subscribing (╯°□°）╯');
+        }
+    });
+
     //+ Функции работающие с сервером:
     //+ Модалка с сообщениями:
     function showMessage(notification) {

@@ -273,7 +273,12 @@ async function loadBasket() {
             basketContainer.appendChild(card);
         });
 
-        // Добавляю обработчик для удаления товара
+        // Обработчики для кнопок (Оформление заказа):
+        document.querySelectorAll('.cards__btn-order').forEach((button) => {
+            button.addEventListener('click', createOrder);
+        });
+
+        // Добавляю обработчик для удаления товара:
         document.querySelectorAll('.cards__btn-remove').forEach(button => {
             button.addEventListener('click', removeFromBasket);
         });
@@ -281,6 +286,15 @@ async function loadBasket() {
         console.error('Error loading basket:', error);
     }
 }
+
+//+ Загрузка корзины при загрузке страницы:
+document.addEventListener('DOMContentLoaded', loadBasket);
+
+//+ Ссылка office:
+document.querySelector('#office').addEventListener('click', (e) => {
+    e.preventDefault();
+    checkAuth();
+});
 
 //+ Функции работающие с сервером:
 //+ Удаление карточек:
@@ -311,7 +325,7 @@ async function removeFromBasket(event) {
 //+ Модалка с сообщениями:
 function showMessage(notification) {
     const modal = document.querySelector('.modal-message'),
-          message = modal.querySelector('.modal__text');
+          message = modal.querySelector('.modal__text');          
 
     modal.classList.add('modal-message-active');
     message.innerHTML = notification;
@@ -320,15 +334,6 @@ function showMessage(notification) {
         modal.classList.remove('modal-message-active');
     }, 2500);
 }
-
-// Загружаем корзину при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadBasket);
-
-//+ Ссылка office:
-document.querySelector('#office').addEventListener('click', (e) => {
-    e.preventDefault();
-    checkAuth();
-});
 
 //+ для ссылки office:
 async function checkAuth() {
@@ -349,5 +354,35 @@ async function checkAuth() {
     } catch (error) {
         console.error('Ошибка при проверке авторизации:', error);
         showModal(modalAreaSignIn);
+    }
+}
+
+//+ для создания заказа:
+async function createOrder(event) {
+    const productId = event.target.dataset.productId;
+
+    try {
+        const response = await fetch('/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId }),
+        });
+
+        if (response.ok) {
+            // showMessage(response.message);
+            alert('done');
+            // Удалить карточку товара из корзины:
+            event.target.closest('.cards').remove();
+
+            location.reload(); // Перезагрузка страници
+        } else {
+            const error = await response.json();
+            alert(`Failed to create order: ${error.message}`);
+        }
+    } catch (error) {
+        console.error('Error creating order:', error);
+        alert('An error occurred while creating the order.');
     }
 }
