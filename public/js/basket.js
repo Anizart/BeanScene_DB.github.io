@@ -371,18 +371,17 @@ async function createOrder(event) {
         });
 
         if (response.ok) {
-            // showMessage(response.message);
-            alert('done');
+            showMessage(response.message);
             // Удалить карточку товара из корзины:
             event.target.closest('.cards').remove();
 
             location.reload(); // Перезагрузка страници
         } else {
             const error = await response.json();
-            alert(`Failed to create order: ${error.message}`);
+            showMessage(`Failed to create order: ${error.message}`);
         }
     } catch (error) {
         console.error('Error creating order:', error);
-        alert('An error occurred while creating the order.');
+        showMessage('An error occurred while creating the order.');
     }
 }

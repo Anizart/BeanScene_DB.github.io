@@ -241,7 +241,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
 
             const data = await response.json();
-            console.log("Ответ от сервера:", data);
+            console.debug("Ответ от сервера:", data);
 
             if (response.ok) {
                 showMessage(data.message);
@@ -353,11 +353,13 @@ window.addEventListener('DOMContentLoaded', async () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ productId })
                 });
+
+                const data = await response.json();
     
                 if (response.ok) {
                     showMessage('Product added to the basket!');
                 } else {
-                    showMessage('Failed to add product to the basket');
+                    showMessage(data.message);
                 }
             } catch (error) {
                 console.error('Error adding product to the basket:', error);

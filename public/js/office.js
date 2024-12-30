@@ -93,7 +93,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     modalSearch.addEventListener('click', () => {
         closeModal(modalSearch);
     });
-
     //+ Для поиска продуктов:
     document.querySelector('#search').addEventListener('input', async function () {
         const searchQuery = this.value.trim();
@@ -149,9 +148,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             });
     
                             if (response.ok) {
-                                alert('Product added to the basket!');
+                                showMessage('Product added to the basket!');
                             } else {
-                                alert('Failed to add product to the basket');
+                                showMessage('Failed to add product to the basket');
                             }
                         } catch (error) {
                             console.error('Error adding product to the basket:', error);
@@ -278,7 +277,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         } catch (error) {
             console.error("Error fetching user data:", error);
-            alert("Failed to load user data. Please try again.");
+            showMessage("Failed to load user data. Please try again.");
         }
 
     //+ Редактирование профиля:
@@ -367,7 +366,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     //+ Модалка с сообщениями:
     function showMessage(notification) {
         const modal = document.querySelector('.modal-message'),
-            message = modal.querySelector('.modal__text');
+              message = modal.querySelector('.modal__text');
 
         modal.classList.add('modal-message-active');
         message.innerHTML = notification;
