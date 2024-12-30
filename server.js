@@ -409,8 +409,7 @@ app.post('/add-to-basket', async (req, res) => {
         const { productId } = req.body;
 
         if (!userId) {
-            console.log('Нет пользователя');
-            return res.status(401);
+            return res.status(401).json({ message: 'Please log in to place an order' });
         }
 
         if (!productId) {
