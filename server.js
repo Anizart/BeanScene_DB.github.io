@@ -117,6 +117,11 @@ const Order = sequelize.define('order', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    flavor_additive: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "Без добавок"
+    }
 });
 
 // + Модель таблицы корзины:
@@ -158,7 +163,7 @@ Product.hasMany(Order, { foreignKey: 'id_product' }); // Один продукт
 Order.belongsTo(Product, { foreignKey: 'id_product' });
 
 // await sequelize.sync({ force: true }); //+ Для полного пересоздания таблиц
-await sequelize.sync(); //+ Синхранизация бд...
+await sequelize.sync(); //+ Синхронизация бд...
 
 //+ Необходимые загрузки для корректной работы приожения:
 //+ Продукты:
@@ -271,7 +276,7 @@ app.post('/login', async (req, res) => {
 });
 
 //+ Ссылка офиса (прверка):
-//+ Маршрут для проверки авторизации:
+//+ Эндпоинт для проверки авторизации:
 app.get('/check-auth', (req, res) => {
     const userId = req.cookies.userId;
 
@@ -461,15 +466,28 @@ app.delete('/remove-from-basket', async (req, res) => {
             return res.status(400).json({ message: 'Product ID is required' });
         }
 
-        // Удаляю запись из корзины:
-        await Basket.destroy({
+        // Находим один товар в корзине
+        const productInBasket = await Basket.findOne({
             where: {
                 id_user: userId,
                 id_product: productId
             }
         });
 
-        res.status(200).json({ message: 'Product removed from basket successfully' });
+        if (productInBasket) {
+            await productInBasket.destroy();
+
+            // Проверяем, остались ли еще товары в корзине
+            const remainingItems = await Basket.findAll({ where: { id_user: userId } });
+
+            if (remainingItems.length === 0) {
+                return res.status(200).json({ message: 'Basket is empty' }); // Сообщаем фронту, что корзина пустая
+            }
+
+            return res.status(200).json({ message: 'Product removed from basket successfully' });
+        } else {
+            return res.status(404).json({ message: 'Product not found in basket' });
+        }
     } catch (error) {
         console.error('Error removing product from basket:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -480,7 +498,7 @@ app.delete('/remove-from-basket', async (req, res) => {
 app.post('/create-order', async (req, res) => {
     try {
         const userId = req.cookies.userId;
-        const { productId } = req.body;
+        const { productId, flavor_additive } = req.body;
 
         if (!userId) {
             return res.status(401).json({ message: 'User not authenticated' });
@@ -490,30 +508,68 @@ app.post('/create-order', async (req, res) => {
             return res.status(400).json({ message: 'Product ID is required' });
         }
 
-        // Получение адреса пользователя:
+        // Получаем адрес пользователя:
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const order = await Order.create({
+        // Проверяем, есть ли этот товар в корзине
+        const productInBasket = await Basket.findOne({
+            where: { id_user: userId, id_product: productId }
+        });
+
+        if (!productInBasket) {
+            return res.status(404).json({ message: 'Product not found in basket' });
+        }
+
+        // Создаём заказ с добавками
+        await Order.create({
             id_user: userId,
             id_product: productId,
             time: new Date(),
-            address: user.address, // Адрес пользователя
+            address: user.address,
+            flavor_additive: flavor_additive || "Без добавок"
         });
 
-        // Удаление продукта из корзины после создания заказа:
-        await Basket.destroy({
-            where: { id_user: userId, id_product: productId },
-        });
+        // Удаляем товар из корзины
+        await productInBasket.destroy();
 
-        res.status(201).json({ message: 'Order created successfully'});
+        res.status(201).json({ message: 'Order created successfully' });
+
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+//- ????? УДАЛИ!!!!!
+// app.post('/add-additive', async (req, res) => {
+//     try {
+//         const { productId, additiveId } = req.body;
+
+//         if (!productId || !additiveId) {
+//             return res.status(400).json({ message: 'Не переданы productId или additiveId!' });
+//         }
+
+//         // Найти продукт (например, в базе данных)
+//         const product = await Product.findById(productId);
+//         const additive = await Additive.findById(additiveId);
+
+//         if (!product || !additive) {
+//             return res.status(404).json({ message: 'Продукт или добавка не найдены!' });
+//         }
+
+//         // Добавляем добавку к продукту
+//         product.additives.push(additive);
+//         await product.save();
+
+//         res.json({ message: `Добавка ${additive.name} успешно добавлена!`, product });
+//     } catch (error) {
+//         console.error('Ошибка на сервере:', error);
+//         res.status(500).json({ message: 'Ошибка сервера при добавлении добавки!' });
+//     }
+// });
 
 //+ Эндпоинт для подсчёта кол-ва заказов, сделанных за сегодня:
 app.get('/orders-today', async (req, res) => {
