@@ -304,8 +304,8 @@
                             Don’t miss out on our latest news, updates, tips and special offers
                         </div>
                         <form type="post" action="#" class="subscribe__form">
-                            <input type="email" name="email" class="subscribe__input" placeholder="Enter your mail" tabindex="1" required>
-                            <button class="subscribe__btn" tabindex="2">Subscribe</button>
+                            <input type="email" name="email" class="subscribe__input" placeholder="Enter your mail" tabindex="6" required>
+                            <button class="subscribe__btn" tabindex="7">Subscribe</button>
                         </form>
                     </div>
                 </div>
@@ -370,7 +370,7 @@
             </div>
         </footer>
         <!--+ MODALS: -->
-        <div class="modal" data-modal-signUp>
+        <div class="modal" data-modal-signUp tabindex="-1">
             <form action="#" method="post" class="modal__wrapper">
                 <div class="modal__text">
                     Welcome! Your coffee adventure starts here.
@@ -385,7 +385,7 @@
                 </div>
                 <div class="modal__wrapper-input">
                     <label for="address" class="modal__label">Address</label>
-                    <input list="cities" type="text" name="address" id="address" class="modal__input" tabindex="2" required>
+                    <input list="cities" type="text" name="address" id="address" class="modal__input" tabindex="3" required>
                     <datalist id="cities">
                         <option>Moscow
                         <option>Saint-Petersburg
@@ -397,26 +397,26 @@
                 </div>
                 <div class="modal__wrapper-input">
                     <label for="password" class="modal__label">Password</label>
-                    <input type="text" name="password" id="password" class="modal__input" tabindex="3" required>
+                    <input type="text" name="password" id="password" class="modal__input" tabindex="4" required>
                 </div>
-                <button type="submit" class="btn modal__btn" tabindex="4" data-btn-signUp>To Send</button>
+                <button type="submit" class="btn modal__btn" tabindex="5" data-btn-signUp>To Send</button>
                 <div class="modal__link" data-linkRegistration>already have an account?</div>
             </form>
         </div>
-        <div class="modal" data-modal-signIn>
+        <div class="modal" data-modal-signIn tabindex="-1">
             <form action="#" method="post" class="modal__wrapper">
                 <div class="modal__text">
                     Welcome back! The best coffee moments are waiting for you.
                 </div>
                 <div class="modal__wrapper-input">
                     <label for="email-authorization" class="modal__label">Email</label>
-                    <input type="text" name="email-signIn" id="email-authorization" class="modal__input" tabindex="2" required>
+                    <input type="text" name="email-signIn" id="email-authorization" class="modal__input" tabindex="1" required>
                 </div>
                 <div class="modal__wrapper-input">
                     <label for="password-authorization" class="modal__label">Password</label>
-                    <input type="text" name="password-signIn" id="password-authorization" class="modal__input" tabindex="1" required>
+                    <input type="text" name="password-signIn" id="password-authorization" class="modal__input" tabindex="2" required>
                 </div>
-                <button type="submit" class="btn modal__btn" tabindex="2" data-btn-signIn>To send</button>
+                <button type="submit" class="btn modal__btn" tabindex="3" data-btn-signIn>To send</button>
                 <div class="modal__wrapper-link">
                     <div class="modal__link" data-linkAuthorization>new account</div>
                     <div class="modal__link">forgot password?</div>
@@ -428,11 +428,11 @@
                 <div class="modal__text">
                     What do you want today?
                 </div>
-                <input type="text" name="email-signIn" id="search" class="modal__input" placeholder="Product name..." tabindex="2" required>
+                <input type="text" name="email-signIn" id="search" class="modal__input" placeholder="Product name..." tabindex="1" required>
                 <div class="modal-search__wrapper-products"></div>
             </form>
         </div>
-        <div class="modal modal-message" data-modal-order>
+        <div class="modal modal-message" style="z-index: 0;" data-modal-order>
             <div class="modal__wrapper modal__wrapper-border">
                 <div class="modal__text"></div>
             </div>
