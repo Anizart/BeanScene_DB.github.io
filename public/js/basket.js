@@ -243,7 +243,36 @@ document.querySelector('#search').addEventListener('input', async function () {
     }
 });
 
-//+ Контент страницы:
+//+ Вывод контента в корзине:
+//+ Функции для работы с cookies:
+function setCookie(name, value, days) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=/`;
+}
+function getCookie(name) {
+    const cookies = document.cookie.split('; ');
+    for (let cookie of cookies) {
+        const [key, value] = cookie.split('=');
+        if (key === name) return JSON.parse(value);
+    }
+    return {};
+}
+
+//+ Функция обновления cookies (с возможностью удаления продукта):
+function updateCookies(productId, basketItemId, selectedAdditivesArray = null) {
+    let allAdditives = getCookie('selectedAdditives');
+
+    if (selectedAdditivesArray !== null) {
+        allAdditives[basketItemId] = selectedAdditivesArray;
+    } else {
+        delete allAdditives[basketItemId];
+    }
+
+    setCookie('selectedAdditives', allAdditives, 7);
+}
+
+//+ Основная функция загрузки корзины:
 async function loadBasket() {
     try {
         const response = await fetch('/get-basket');
@@ -254,10 +283,14 @@ async function loadBasket() {
         if (basketItems.length === 0) { return; }
 
         const basketContainer = document.querySelector('.basket__null');
+        if (!basketContainer) {
+            console.error("Ошибка: контейнер для корзины не найден!");
+            return;
+        }
         basketContainer.innerHTML = '';
-        
+
         basketItems.forEach(item => {
-            const product = item.product; // Связанный продукт
+            const product = item.product;
             const card = document.createElement('div');
             card.classList.add('cards');
             card.innerHTML = `
@@ -266,29 +299,122 @@ async function loadBasket() {
                     <h3 class="cards__name">Selected product: ${product.name}</h3>
                     <div class="cards__weights">${product.description}</div>
                     <div class="cards__price">${product.price}$</div>
-                    <button class="btn cards__btn-order" data-product-id="${product.id}">Order</button>
-                    <button class="btn cards__btn-remove" data-product-id="${product.id}">Remove 🗑</button>
+                    <button class="btn cards__btn-order" data-product-id="${product.id}" data-basket-item-id="${item.id}">Order</button>
+                    <button type="submit" class="btn" data-btn-addTaste data-basket-item-id="${item.id}">Add</button>
+                    <button class="btn cards__btn-remove" data-product-id="${product.id}" data-basket-item-id="${item.id}">Remove 🗑</button>
                 </div>
             `;
             basketContainer.appendChild(card);
+
+            //+ Обработчики кнопок:
+            card.querySelector('.cards__btn-order').addEventListener('click', createOrder);
+            card.querySelector('.cards__btn-remove').addEventListener('click', removeFromBasket);
+
+            const modalAdditives = document.querySelector('[data-modal-additives]');
+            modalAdditives.addEventListener('click', () => {
+                closeModal(modalAdditives);
+            });
+            const addTasteButton = card.querySelector('[data-btn-addTaste]');
+
+            if (addTasteButton) {
+                addTasteButton.addEventListener('click', () => showAdditivesModal(product.id, item.id));
+            }
         });
 
-        // Обработчики для кнопок (Оформление заказа):
-        document.querySelectorAll('.cards__btn-order').forEach((button) => {
-            button.addEventListener('click', createOrder);
-        });
-
-        // Добавляю обработчик для удаления товара:
-        document.querySelectorAll('.cards__btn-remove').forEach(button => {
-            button.addEventListener('click', removeFromBasket);
-        });
     } catch (error) {
         console.error('Error loading basket:', error);
     }
 }
 
-//+ Загрузка корзины при загрузке страницы:
+//+ Открытие модального окна с добавками для конкретного продукта:
+function showAdditivesModal(productId, basketItemId) {
+    const modalAdditives = document.querySelector('[data-modal-additives]');
+    if (!modalAdditives) return;
+
+    modalAdditives.dataset.currentProduct = productId;
+    modalAdditives.dataset.currentBasketItem = basketItemId;
+    showModal(modalAdditives);
+
+    let selectedAdditives = new Set(getCookie('selectedAdditives')[basketItemId] || []);
+    let selectedAdditivesArray = Array.from(selectedAdditives);
+
+    //+ Обновление UI:
+    document.querySelectorAll('[data-btn-add]').forEach(btn => {
+        const additive = parseInt(btn.dataset.btnAdd, 10);
+        if (selectedAdditives.has(additive)) {
+            toggleCancelButton(btn, true);
+        } else {
+            toggleCancelButton(btn, false);
+        }
+
+        btn.onclick = () => {
+            if (!selectedAdditives.has(additive)) {
+                selectedAdditives.add(additive);
+            } else {
+                selectedAdditives.delete(additive);
+            }
+            selectedAdditivesArray = Array.from(selectedAdditives);
+            updateCookies(productId, basketItemId, selectedAdditivesArray);
+            toggleCancelButton(btn, selectedAdditives.has(additive));
+        };
+    });
+
+    document.querySelector("[data-btn-done]").onclick = () => closeModal(modalAdditives);
+
+    document.querySelector('[data-btn-cancellation]').onclick = () => {
+        selectedAdditives.clear();
+        selectedAdditivesArray = [];
+        document.querySelectorAll('.cancel-btn').forEach(cancelBtn => cancelBtn.remove());
+        updateCookies(productId, basketItemId, selectedAdditivesArray);
+        closeModal(modalAdditives);
+    };
+}
+
+//+ Функция для обновления cookies:
+function updateCookies(productId, basketItemId, selectedAdditivesArray) {
+    let allAdditives = getCookie('selectedAdditives');
+    allAdditives[basketItemId] = selectedAdditivesArray;
+    setCookie('selectedAdditives', allAdditives, 7);
+}
+
+//+ Переключение кнопки отмены:
+function toggleCancelButton(addBtn, show) {
+    const parent = addBtn.closest('.modal__additives');
+    if (!parent) return;
+
+    if (show) {
+        let cancelBtn = parent.querySelector(`.cancel-btn[data-cancel="${addBtn.dataset.btnAdd}"]`);
+
+        if (!cancelBtn) {
+            cancelBtn = document.createElement('button');
+            cancelBtn.classList.add('btn', 'cancel-btn', 'modal__btn-cancellation');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.dataset.cancel = addBtn.dataset.btnAdd;
+
+            cancelBtn.addEventListener('click', () => {
+                const additive = parseInt(addBtn.dataset.btnAdd, 10);
+                let modalAdditives = document.querySelector('[data-modal-additives]');
+                let productId = modalAdditives.dataset.currentProduct;
+                let basketItemId = modalAdditives.dataset.currentBasketItem;
+                let selectedAdditives = new Set(getCookie('selectedAdditives')[basketItemId] || []);
+                selectedAdditives.delete(additive);
+                updateCookies(productId, basketItemId, Array.from(selectedAdditives));
+                cancelBtn.remove();
+                toggleCancelButton(addBtn, false);
+            });
+
+            parent.appendChild(cancelBtn);
+        }
+    } else {
+        const existingCancelBtn = parent.querySelector(`.cancel-btn[data-cancel="${addBtn.dataset.btnAdd}"]`);
+        if (existingCancelBtn) existingCancelBtn.remove();
+    }
+}
+
+//+ Загружаем корзину после загрузки страницы:
 document.addEventListener('DOMContentLoaded', loadBasket);
+
+//!
 
 //+ Ссылка office:
 document.querySelector('#office').addEventListener('click', (e) => {
@@ -300,6 +426,7 @@ document.querySelector('#office').addEventListener('click', (e) => {
 //+ Удаление карточек:
 async function removeFromBasket(event) {
     const productId = event.target.dataset.productId;
+    const basketItemId = event.target.dataset.basketItemId;
 
     try {
         const response = await fetch('/remove-from-basket', {
@@ -311,9 +438,16 @@ async function removeFromBasket(event) {
         });
 
         const data = await response.json();
+        console.log(data); // Логируем ответ сервера
 
         if (response.ok) {
-            loadBasket(); // Перезагрузка корзины
+            updateCookies(productId, basketItemId, null);
+
+            if (data.message === 'Basket is empty') {
+                document.querySelector('.basket-container').innerHTML = '<p>Корзина пуста</p>'; // Полностью очищаем корзину
+            } else {
+                loadBasket(); // Перезагрузка
+            }
         } else {
             alert(`Error: ${data.message}`);
         }
@@ -360,6 +494,11 @@ async function checkAuth() {
 //+ для создания заказа:
 async function createOrder(event) {
     const productId = event.target.dataset.productId;
+    const basketItemId = event.target.dataset.basketItemId;
+
+    // Получаем добавки для этого продукта из cookies
+    let allAdditives = getCookie('selectedAdditives') || {};
+    let flavorAdditives = allAdditives[basketItemId] ? allAdditives[basketItemId].join(', ') : "Без добавок";
 
     try {
         const response = await fetch('/create-order', {
@@ -367,21 +506,25 @@ async function createOrder(event) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ productId }),
+            body: JSON.stringify({ productId, flavor_additive: flavorAdditives }),
         });
 
         if (response.ok) {
-            showMessage(response.message);
-            // Удалить карточку товара из корзины:
+            showMessage("Заказ успешно создан!");
+
+            // Удаляем добавки этого товара из cookies
+            updateCookies(productId, basketItemId, null);
+
+            // Удаляем карточку товара из корзины
             event.target.closest('.cards').remove();
 
-            location.reload(); // Перезагрузка страници
+            location.reload(); // Перезагрузка страницы
         } else {
             const error = await response.json();
-            showMessage(`Failed to create order: ${error.message}`);
+            showMessage(`Ошибка при создании заказа: ${error.message}`);
         }
     } catch (error) {
-        console.error('Error creating order:', error);
-        showMessage('An error occurred while creating the order.');
+        console.error('Ошибка при создании заказа:', error);
+        showMessage('Произошла ошибка при оформлении заказа.');
     }
 }

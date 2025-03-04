@@ -1,7 +1,6 @@
 'use strict'
 
 window.addEventListener('DOMContentLoaded', async () => {
-
     //+ header:
     //+ header-scroll:
     const header = document.querySelector('.header');
@@ -40,6 +39,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         modalSignUp = document.querySelector('[data-open-signUp]'),
         entrance = modalAreaSignUp.querySelector('[data-linkRegistration]'),
         createAccount = modalAreaSignIn.querySelector('[data-linkAuthorization]');
+
+    
 
     document.querySelectorAll('.modal__wrapper').forEach(wrapper => {
         wrapper.addEventListener('click', (e) => {
@@ -106,25 +107,64 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     //+ Тёмная тема:
-    const themeSwitch = document.querySelector('#toggle-dark-mode'),
-        body = document.querySelector('.body'),
-        titles = body.querySelectorAll('[data-title]'),
-        subtitles = body.querySelectorAll('.subtitle'),
-        elementsBg = body.querySelectorAll('.response__wrapper');
+    const themeSwitch = document.querySelector("#toggle-dark-mode"),
+          body = document.querySelector(".body"),
+          titles = document.querySelectorAll("[data-title]"),
+          subtitles = document.querySelectorAll(".subtitle"),
+          elementsBg = document.querySelectorAll(".response__wrapper"),
+          descriptions = document.querySelectorAll("[data-description]"),
+          quotationMarks = document.querySelector(".response__quotation-marks");
 
-    themeSwitch.addEventListener('click', () => {
-        body.classList.toggle('dark-theme-bg');
-        titles.forEach(title => {
-            title.classList.toggle('dark-theme-text-title');
-        });
-        subtitles.forEach(subtitle => {
-            subtitle.classList.toggle('dark-theme-text-title');
-        });
-        elementsBg.forEach(elem => elem.classList.toggle('light-background-elements-bg'));
-        document.querySelectorAll('[data-description]').forEach(description => {
-            description.classList.toggle('dark-theme-text');
-        });    
-        document.querySelector('.response__quotation-marks').classList.toggle('dark-theme-text-title');
+    let theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+        enableDarkTheme();
+    }
+    else {
+        disableDarkTheme();
+    }
+
+    // Функция для включения темной темы:
+    function enableDarkTheme() {
+        body.classList.add("dark-theme-bg");
+        titles.forEach(title => title.classList.add("dark-theme-text-title"));
+        subtitles.forEach(subtitle => subtitle.classList.add("dark-theme-text-title"));
+        elementsBg.forEach(elem => elem.classList.add("light-background-elements-bg"));
+        descriptions.forEach(description => description.classList.add("dark-theme-text"));
+        if (quotationMarks) quotationMarks.classList.add("dark-theme-text-title");
+
+        circle.classList.add('circle-transform');
+        toggleCheckbox.classList.add('toggle-container-bg');
+
+        localStorage.setItem("theme", "dark");
+    }
+
+    // Функция для отключения темной темы:
+    function disableDarkTheme() {
+        body.classList.remove("dark-theme-bg");
+        titles.forEach(title => title.classList.remove("dark-theme-text-title"));
+        subtitles.forEach(subtitle => subtitle.classList.remove("dark-theme-text-title"));
+        elementsBg.forEach(elem => elem.classList.remove("light-background-elements-bg"));
+        descriptions.forEach(description => description.classList.remove("dark-theme-text"));
+        if (quotationMarks) quotationMarks.classList.remove("dark-theme-text-title");
+
+        circle.classList.remove('circle-transform');
+        toggleCheckbox.classList.remove('toggle-container-bg');
+
+        localStorage.setItem("theme", "light");
+    }
+
+    // Проверяю, какая тема была сохранена в localStorage:
+    if (localStorage.getItem("theme") === "dark") {
+        enableDarkTheme();
+    }
+
+    // Обработчик кнопк переключения темы:
+    themeSwitch.addEventListener("click", () => {
+        if (body.classList.contains("dark-theme-bg")) {
+            disableDarkTheme();
+        } else {
+            enableDarkTheme();
+        }
     });
 
     //+ owl-carousel:
@@ -268,7 +308,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     fetchAndDisplayProducts();
 
     //+ Для поиска продуктов:
-    document.querySelector('#search').addEventListener('input', async function () {
+    const input = document.querySelector('#search');
+    input.addEventListener('input', async function () {
         const searchQuery = this.value.trim();
     
         if (searchQuery.length === 0) {
@@ -337,6 +378,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (error) {
             console.error('Error fetching products:', error);
+        }
+    });
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault(); // Блокирую отправку
         }
     });
 
@@ -413,7 +459,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     //+ Модалка с сообщениями:
     function showMessage(notification) {
         const modal = document.querySelector('.modal-message'),
-            message = modal.querySelector('.modal__text');
+              message = modal.querySelector('.modal__text');
 
         modal.classList.add('modal-message-active');
         message.innerHTML = notification;
